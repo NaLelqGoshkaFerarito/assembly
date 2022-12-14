@@ -103,7 +103,10 @@ section .data
 	sNum1Len equ $-sNum1
 	sNum2 db "Please enter your second number: "
 	sNum2Len equ $-sNum2
-	oops db 10, "Choose one of the following operations:", 10, "1.Add", 10, "2.Subtract", 10, "3.Multiply", 10, "4.Divide", 10, "Enter anything else to quit", 10, 10
+	oops db 10, "Choose one of the following operations:", 
+				10, "1.Add", 10, "2.Subtract", 10, 
+				"3.Multiply", 10, "4.Divide", 10, 
+				"5.Quit", 10, 10
 	oopsLen equ $-oops
 	ans db 10, "Answer:"
 	ansLen equ $-ans
