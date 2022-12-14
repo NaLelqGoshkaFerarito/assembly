@@ -1,7 +1,8 @@
 ; Filename: calculator.asm
 ; this code was made by Vladislav Serafimov and Stephen Cruz Wright
 
-;macros here	
+;macros here
+
 ;output to stdout
 ;args: input variable, length
 %macro print 2
@@ -18,75 +19,74 @@
 	mov rax, 0         ;id
 	mov rdi, 0         ;stdin used
 	mov rsi, %1        ;variable
-	mov rdx, 2   	   ;length of variable
+	;sub rsi, '0'	   ; Convert from ascii to decimal
+	mov rdx, 3   	   ;length of variable
 	syscall
 %endmacro
+
 
 ;addition macro
 ;args: number 1, number 2
 %macro addition 2
-	; Perform the addition
-    mov rax, %1
-    mov rbx, %2
 	
-	sub rax, 48
-	sub rbx, 48
+    mov rax, [%1]
+	sub rax, '0'
 	
-	add rax, rbx
+    mov rbx, [%2]
+	sub rbx, '0'
 	
-	add rax, 48
+	add rax, rbx	;Perform the addition
+	add rax, '0'
 	
 	mov [answer], rax
-	syscall
 %endmacro
 
 ;subtraction macro
 ;args: number 1, number 2
 %macro subtraction 2
-	mov rax, %1
-	sub rax, 48
-	mov rbx, %2
-	sub rbx, 48
+	mov rax, [%1]
+	sub rax, '0'
+	
+	mov rbx, [%2]
+	sub rbx, '0'
+	
 	sub rax, rbx
-	add rax, 48
+	add rax, '0'
+	
 	mov [answer], rax
-	syscall
 %endmacro
 
 ;multiplication macro
 ;args: number 1, number 2
 %macro multiplication 2
-	;mov rax, %1
-	;mul rax, %2
-	;mov [answer], rax
+	mov rax, [%1]
+	sub rax, '0'
+	
+	mov rbx, [%2]
+	sub rbx, '0'
+	
+	imul rax, rbx
+	add rax, '0'
+	
+	mov [answer], rax
 %endmacro
 
 ;division macro
 ;args: number 1, number 2
 %macro division 2
-;	mov rax, %1 ; move the first operand into rax register
-;	mov rbx, %2 ; move the second operand into rbx register
-;	cqo ; sign-extend rax into rdx:rax
-;	idiv rbx ; divide rdx:rax by rbx
+	mov al, [%1]; move the first operand into rax register
+	sub al, '0'
 	
-;	cmp rdx, 0 ; check if the remainder is zero
-;	jz roundDown ; if the remainder is zero, round down
+	mov dx, 0; clears decimal points (rounds down)
+    mov ah, 0
 	
-;	cmp rdx, rbx/2 ; check if the remainder is greater than half of the divisor
-;	jg roundUp ; if the remainder is greater than half of the divisor, round up
-;	jmp result ; otherwise, return the result as is
+	mov bl, [%2]; move the second operand into rbx register
+	sub bl, '0'
 	
-;	roundUp:
-;	inc rax ; increment the result by 1 to round up
-;	jmp result ; return the result
+	idiv bl
+	add ax, '0'
 	
-;	roundDown:
-	;no need to round down
-	
-;	result:
-;	mov %0, rax ; move the result into the destination register
-	
-;	syscall
+	mov [answer], ax	; move the result into the destination register
 %endmacro
 
 ;just exit the program
@@ -109,10 +109,10 @@ section .data
 	ansLen equ $-ans
 	
 section .bss ;used to reserve data
-	var1 resb 2 ;reserve 2 bytes for var 1
-	var2 resb 2
+	var1 resb 3 ;reserve 3 bytes for var 1
+	var2 resb 3
 	choice resb 2
-	answer resb 2
+	answer resb 3
 	
 section .text
 	global _start
@@ -130,22 +130,22 @@ _start:
 		
 		print oops, oopsLen		;displays choices
 		read choice  		;reads user's choice
-		mov ah, [choice]        ; Move the selected option []as a pointer] to the registry ah
-		sub ah, 48     		; Convert from ascii to decimal
+		mov ah, [choice]        ; Move the selected option [as a pointer] to the registry ah
 		
-		cmp ah, 1
+		
+		cmp ah, '1'
 		je Addition
 		
-		cmp ah, 2
+		cmp ah, '2'
 		je Subtraction
 		
-		cmp ah, 3
+		cmp ah, '3'
 		je Multiplication
 		
-		cmp ah, 4
+		cmp ah, '4'
 		je Division
 		
-		;cmp choice, 5
+		cmp ah, '5'
 		je Quit
 		
 	Addition:
@@ -168,7 +168,7 @@ _start:
 		
 		print ans, ansLen
 		
-		print answer, 8 
+		print answer, 1
 		jmp StartofLoop	;restarts loop
 		
 	Quit:
